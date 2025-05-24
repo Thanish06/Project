@@ -1,0 +1,122 @@
+#include <SoftwareSerial.h>
+SoftwareSerial BT(0,1); // RX, TX
+String readvoice;
+
+#define MLa 5   //left motor 1st pin
+#define MLb 4    //left motor 2nd pin
+#define MRa 3    //right motor 1st pin
+#define MRb 2    //right motor 2nd pin
+#define enb1 9
+#define enb2 10
+#define trigPin 7
+#define echoPin 6
+long duration;
+int distance;
+
+ 
+void setup()
+{
+  Serial.begin(9600);
+  BT.begin(9600);
+pinMode(MLa,OUTPUT);   //left motors forward
+pinMode(MLb,OUTPUT);   //left motors reverse
+pinMode(MRa,OUTPUT);   //right motors forward
+pinMode(MRb,OUTPUT);   //right motors reverse
+pinMode(enb1,OUTPUT);
+pinMode(enb2,OUTPUT);
+pinMode(trigPin,OUTPUT);
+  pinMode(echoPin,INPUT);
+}
+ 
+void loop() 
+{
+  digitalWrite(trigPin,LOW);
+  delay(2000);
+  digitalWrite(trigPin,HIGH);
+  digitalWrite(trigPin,LOW);
+  duration =pulseIn(echoPin,HIGH);
+  distance= duration * 0.034/2;
+  Serial.print("Distance:");
+  Serial.print(distance);
+  Serial.println("cm");
+  if (distance <100)
+  {
+ digitalWrite(MLa,LOW);
+ digitalWrite(MLb,LOW); 
+ digitalWrite(MRa,LOW);
+ digitalWrite(MRb,LOW);
+ analogWrite(enb1,0);
+ analogWrite(enb2,0);
+  }
+while (BT.available())
+{
+  delay(10);
+  char c = BT.read();
+  readvoice += c;
+}
+ if (readvoice.length()>0)
+ {
+  Serial.println(readvoice);
+  if (readvoice == "forward")
+        {            //move forward(all motors rotate in forward direction)
+          digitalWrite(MLa,LOW);
+          digitalWrite(MLb,HIGH);
+          digitalWrite(MRa,HIGH);
+          digitalWrite(MRb,LOW);
+          analogWrite(enb1,500);
+          analogWrite(enb2,500);
+          delay(100);
+        }
+   else if (readvoice == "Back")
+   
+  
+        {      //move reverse (all motors rotate in reverse direction)
+          digitalWrite(MLa,HIGH);
+          digitalWrite(MLb,LOW);
+          digitalWrite(MRa,LOW);
+          digitalWrite(MRb,HIGH);
+          analogWrite(enb1,500);
+          analogWrite(enb2,500);
+          delay(100);
+        }
+  
+   
+ else if (readvoice == "Left")
+   
+        {      //turn right (left side motors rotate in forward direction, right side motors doesn't rotate)
+          digitalWrite(MLa,HIGH); 
+          digitalWrite(MLb,LOW); 
+          digitalWrite(MRa,HIGH);
+          digitalWrite(MRb,LOW);
+          analogWrite(enb1,500);
+          analogWrite(enb2,500);
+          delay(100);
+        }
+ 
+   
+ else if (readvoice == "Right")
+   
+        {      //turn left (right side motors rotate in forward direction, left side motors doesn't rotate)
+          digitalWrite(MLa,LOW); 
+          digitalWrite(MLb,HIGH); 
+          digitalWrite(MRa,LOW);
+          digitalWrite(MRb,HIGH);
+          analogWrite(enb1,500);
+          analogWrite(enb2,500);
+          delay(100);
+        }
+   
+   
+  else if (readvoice == "Stop")
+        {           //STOP (all motors stop)
+          digitalWrite(MLa,LOW);
+          digitalWrite(MLb,LOW); 
+          digitalWrite(MRa,LOW);
+          digitalWrite(MRb,LOW);
+           analogWrite(enb1,0);
+          analogWrite(enb2,0);
+          delay(100);
+        }
+ 
+readvoice="";}
+}
